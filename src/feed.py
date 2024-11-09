@@ -1,38 +1,7 @@
-import xml.etree.ElementTree as ET
+from src.feeds import Feeds
 import feedparser
 import json
 from datetime import datetime
-
-
-class OPMLParser:
-    @staticmethod
-    def parse_opml(file_path: str) -> list[dict]:
-        """
-        Parse an OPML file and extract feed URLs and titles
-
-        Args:
-            file_path (str): Path to the OPML file
-
-        Returns:
-            List of dictionaries containing feed information
-        """
-        feeds = []
-        tree = ET.parse(file_path)
-        root = tree.getroot()
-
-        # Find all outline elements with xmlUrl attribute
-        for outline in root.findall(".//outline[@xmlUrl]"):
-            feed_url = outline.get("xmlUrl")
-            title = outline.get("title", outline.get("text", "Untitled Feed"))
-            category = outline.get("category", "Unsorted")
-
-            feeds.append({
-                "url": feed_url,
-                "title": title,
-                "category": category
-            })
-
-        return feeds
 
 
 class FeedParser:
@@ -112,15 +81,15 @@ class FeedHistory:
 
 
 class FeedTracker:
-    def __init__(self, feeds_file="data/feeds.opml", history_file="data/history.json"):
+    def __init__(self, feeds: Feeds, history_file="data/history.json"):
         """
         Initialize feed tracker
 
         Args:
-            feeds_file (str, optional): Path to the OPML file. Defaults to "data/feeds.opml".
+            feeds (Feeds): Feeds object.
             history_file (str, optional): Path to the JSON file. Defaults to "data/history.json".
         """
-        self.feeds = OPMLParser.parse_opml(feeds_file)
+        self.feeds = feeds
         self.history = FeedHistory(history_file)
         self.items = []
 
@@ -131,26 +100,26 @@ class FeedTracker:
         Returns:
             List of items
         """
-        for feed in self.feeds:
+        for feed in self.feeds.feeds:
             time_now = datetime.now()
             try:
                 last_updated = datetime.fromtimestamp(
-                    self.history.last_updated(feed["url"]))
+                    self.history.last_updated(feed))
             except TypeError:
                 last_updated = None
 
-            feed_entries = FeedParser.fetch_feed_entries(feed["url"])
+            feed_entries = FeedParser.fetch_feed_entries(feed)
             for entry in feed_entries:
                 entry_time = datetime(
                     entry["published_parsed"][0], entry["published_parsed"][1], entry["published_parsed"][2], entry["published_parsed"][3], entry["published_parsed"][4], entry["published_parsed"][5], entry["published_parsed"][6])
                 if last_updated is None or entry_time > last_updated:
                     self.items.append({
                         "published": entry_time.isoformat(),
-                        "publisher": feed["title"],
-                        "category": feed["category"],
+                        "publisher": self.feeds.feeds[feed]["title"],
+                        "category": self.feeds.feeds[feed].get("category", "Unsorted"),
                         "link": entry["link"]
                     })
 
-            self.history.update_last_updated(feed["url"], time_now.timestamp())
+            self.history.update_last_updated(feed, time_now.timestamp())
 
         return self.items

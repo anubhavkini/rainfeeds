@@ -1,11 +1,15 @@
 import os
+from src.feeds import Feeds
 from src.feed import FeedTracker
 from src.raindrop import Raindrop
 
 
 def main():
-    # Initialize feed tracker
-    feeds = FeedTracker()
+    # Load feeds
+    feeds = Feeds("data/feeds_test.opml")
+
+    # Create feed tracker
+    feed_tracker = FeedTracker(feeds)
 
     # Initialize Raindrop client wrapper
     raindrop_access_token = os.environ.get("RAINDROP_ACCESS_TOKEN")
