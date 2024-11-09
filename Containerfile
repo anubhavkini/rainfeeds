@@ -9,4 +9,4 @@ COPY ["setup.py", "setup.py"]
 
 RUN ["pip", "install", "--no-cache-dir", "-e", "."]
 
-CMD ["rainfeeds"]
+CMD ["rainfeeds", "sync"]

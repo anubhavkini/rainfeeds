@@ -1,50 +1,53 @@
-import os
-from src.feeds import Feeds
-from src.raindrop import Raindrop
-import datetime as dt
-import feedparser
+# main.py
+import argparse
+from src.commands import synchronise, list, add, remove, edit
 
 
 def main():
-    # Load feeds
-    feeds = Feeds("data/rainfeeds.opml")
+    parser = argparse.ArgumentParser(
+        prog="rainfeeds", description="Send entries from RSS and Atom feeds to Raindrop")
+    subparsers = parser.add_subparsers(
+        dest="command", help="Available commands")
 
-    # Initialize Raindrop client wrapper
-    raindrop_access_token = os.environ.get("RAINDROP_ACCESS_TOKEN")
-    if raindrop_access_token is None:
-        raise ValueError(
-            "RAINDROP_ACCESS_TOKEN environment variable is not set")
+    # Define list command
+    subparsers.add_parser("ls", help="List feeds")
 
-    raindrop = Raindrop(raindrop_access_token)
+    # Define add command
+    parser_add = subparsers.add_parser("add", help="Add a new feed")
+    parser_add.add_argument("url", help="URL of the RSS/Atom feed")
+    parser_add.add_argument("-t", "--title", help="Title of the feed")
+    parser_add.add_argument("-c", "--category", help="Category of the feed")
 
-    # Push new entries to Raindrop
-    datetime_fmt = "%a, %d %b %Y %H:%M:%S %Z"
+    # Define remove command
+    parser_remove = subparsers.add_parser("rm", help="Remove a feed")
+    parser_remove.add_argument("url", help="URL of the RSS/Atom feed")
 
-    for feed in feeds:
-        now = dt.datetime.now(dt.timezone(dt.timedelta(0)))
-        try:
-            updated = dt.datetime.strptime(
-                feeds[feed].get("updated"), datetime_fmt)
-        except TypeError:
-            updated = None
+    # Define edit command
+    parser_edit = subparsers.add_parser("edit", help="Edit a feed")
+    parser_edit.add_argument("url", help="URL of the RSS/Atom feed")
+    parser_edit.add_argument("-t", "--title", help="New title of the feed")
+    parser_edit.add_argument(
+        "-c", "--category", help="New category of the feed (leave empty to remove)")
 
-        entries = feedparser.parse(feed).entries
-        new_entries = []
+    # Define synchronise command
+    subparsers.add_parser(
+        "sync", help="Synchronise new entries to Raindrop")
 
-        for entry in entries:
-            entry_published = dt.datetime(*entry["published_parsed"][:6])
+    args = parser.parse_args()
 
-            if updated is None or entry_published > updated:
-                new_entries.append({
-                    "published": entry_published.isoformat(),
-                    "publisher": feeds[feed]["title"],
-                    "category": feeds[feed].get("category", "Unsorted"),
-                    "link": entry["link"]
-                })
-
-        raindrop.create_raindrops(new_entries)
-
-        feeds[feed]["updated"] = now.strftime(datetime_fmt)
+    # Route to appropriate command
+    if args.command == "ls":
+        list.execute(args)
+    elif args.command == "add":
+        add.execute(args)
+    elif args.command == "rm":
+        remove.execute(args)
+    elif args.command == "edit":
+        edit.execute(args)
+    elif args.command == "sync":
+        synchronise.execute(args)
+    else:
+        parser.print_help()
 
 
 if __name__ == "__main__":
