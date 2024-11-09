@@ -89,7 +89,7 @@ class Feeds:
         """
         for url in self:
             print(f"{self[url]["title"]} [{
-                  self[url]["category"]}]\n  {url}\n")
+                  self[url].get("category", '')}]\n  {url}\n")
 
     def add(self, url: str, title: str = None, category: str = None):
         """
