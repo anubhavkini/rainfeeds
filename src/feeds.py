@@ -1,3 +1,4 @@
+import os
 import xml.etree.ElementTree as ET
 import feedparser
 
@@ -33,6 +34,10 @@ class Feeds:
         Args:
             feeds_file_path (str): Path to the OPML file
         """
+        if not os.path.exists(feeds_file_path):
+            print("No feeds file found. New one will be created.")
+            return
+
         tree = ET.parse(feeds_file_path)
         root = tree.getroot()
 
