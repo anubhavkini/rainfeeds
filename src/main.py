@@ -20,7 +20,7 @@ def main():
     raindrop = Raindrop(raindrop_access_token)
 
     # Push new items to Raindrop.io
-    raindrop.create_raindrops(feeds.new_items())
+    raindrop.create_raindrops(feed_tracker.new_items())
 
 
 if __name__ == "__main__":
