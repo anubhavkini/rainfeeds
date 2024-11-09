@@ -100,7 +100,7 @@ class FeedTracker:
         Returns:
             List of items
         """
-        for feed in self.feeds.feeds:
+        for feed in self.feeds:
             time_now = datetime.now()
             try:
                 last_updated = datetime.fromtimestamp(
@@ -115,8 +115,8 @@ class FeedTracker:
                 if last_updated is None or entry_time > last_updated:
                     self.items.append({
                         "published": entry_time.isoformat(),
-                        "publisher": self.feeds.feeds[feed]["title"],
-                        "category": self.feeds.feeds[feed].get("category", "Unsorted"),
+                        "publisher": self.feeds[feed]["title"],
+                        "category": self.feeds[feed].get("category", "Unsorted"),
                         "link": entry["link"]
                     })
 

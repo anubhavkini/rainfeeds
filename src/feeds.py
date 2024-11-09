@@ -4,11 +4,27 @@ import feedparser
 
 class Feeds:
     def __init__(self, feeds_file_path: str):
-        self.feeds_file_path = feeds_file_path
-        self.feeds = self._load(self.feeds_file_path)
+        self._feeds_file_path = feeds_file_path
+        self._feeds = {}
+        self._load(self._feeds_file_path)
 
     def __del__(self):
-        self._save(self.feeds_file_path)
+        self._save(self._feeds_file_path)
+
+    def __iter__(self):
+        return iter(self._feeds)
+
+    def __getitem__(self, key):
+        return self._feeds[key]
+
+    def __setitem__(self, key, value):
+        self._feeds[key] = value
+
+    def __delitem__(self, key):
+        del self._feeds[key]
+
+    def __contains__(self, key):
+        return key in self._feeds
 
     def _load(self, feeds_file_path: str) -> dict:
         """
@@ -16,12 +32,7 @@ class Feeds:
 
         Args:
             feeds_file_path (str): Path to the OPML file
-
-        Returns:
-            List of dictionaries containing feed information
         """
-        feeds = {}
-
         tree = ET.parse(feeds_file_path)
         root = tree.getroot()
 
@@ -31,11 +42,9 @@ class Feeds:
             category = outline.get("category")
             url = outline.get("xmlUrl")
 
-            feeds[url] = {"title": title}
+            self[url] = {"title": title}
             if category is not None:
-                feeds[url]["category"] = category
-
-        return feeds
+                self[url]["category"] = category
 
     def _save(self, feeds_file_path: str):
         """
@@ -52,11 +61,11 @@ class Feeds:
 
         body = ET.SubElement(root, "body")
 
-        for url in self.feeds:
+        for url in self:
             outline = ET.SubElement(
-                body, "outline", text=self.feeds[url]["title"], type="rss", xmlUrl=url)
-            if "category" in self.feeds[url]:
-                outline.set("category", self.feeds[url]["category"])
+                body, "outline", text=self[url]["title"], type="rss", xmlUrl=url)
+            if "category" in self[url]:
+                outline.set("category", self[url]["category"])
 
         tree = ET.ElementTree(root)
         tree.write(feeds_file_path, encoding="utf-8", xml_declaration=True)
@@ -68,9 +77,9 @@ class Feeds:
         <title> [<category>]
           <url>
         """
-        for url in self.feeds:
-            print(f"{self.feeds[url]["title"]} [{
-                  self.feeds[url]["category"]}]\n  {url}\n")
+        for url in self:
+            print(f"{self[url]["title"]} [{
+                  self[url]["category"]}]\n  {url}\n")
 
     def add(self, url: str, title: str = None, category: str = None):
         """
@@ -81,7 +90,7 @@ class Feeds:
             title (str, optional): Title of the feed. Defaults to None.
             category (str, optional): Category of the feed. Defaults to None.
         """
-        if url in self.feeds:
+        if url in self:
             print("Feed already exists.")
             return
 
@@ -98,9 +107,9 @@ class Feeds:
                 title = "Untitled Feed"
 
         if category is not None:
-            self.feeds[url] = {"title": title, "category": category}
+            self[url] = {"title": title, "category": category}
         else:
-            self.feeds[url] = {"title": title}
+            self[url] = {"title": title}
 
     def remove(self, url: str):
         """
@@ -110,7 +119,7 @@ class Feeds:
             url (str): URL of the RSS/Atom feed
         """
         try:
-            del self.feeds[url]
+            del self[url]
         except KeyError:
             print("Feed does not exist.")
 
@@ -123,14 +132,14 @@ class Feeds:
             title (str, optional): New title of the feed. Defaults to None.
             category (str, optional): New category of the feed. Defaults to None.
         """
-        if url not in self.feeds:
+        if url not in self:
             print("Feed does not exist.")
             return
 
         if title is not None:
-            self.feeds[url]["title"] = title
+            self[url]["title"] = title
         if category is not None:
             if category == '':
-                del self.feeds[url]["category"]
+                del self[url]["category"]
             else:
-                self.feeds[url]["category"] = category
+                self[url]["category"] = category
