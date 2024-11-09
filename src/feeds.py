@@ -44,10 +44,13 @@ class Feeds:
         # Find all outline elements with xmlUrl attribute
         for outline in root.findall(".//outline[@xmlUrl]"):
             title = outline.get("text")
+            updated = outline.get("updated")
             category = outline.get("category")
             url = outline.get("xmlUrl")
 
             self[url] = {"title": title}
+            if updated is not None:
+                self[url]["updated"] = updated
             if category is not None:
                 self[url]["category"] = category
 
@@ -69,6 +72,8 @@ class Feeds:
         for url in self:
             outline = ET.SubElement(
                 body, "outline", text=self[url]["title"], type="rss", xmlUrl=url)
+            if "updated" in self[url]:
+                outline.set("updated", self[url]["updated"])
             if "category" in self[url]:
                 outline.set("category", self[url]["category"])
 
