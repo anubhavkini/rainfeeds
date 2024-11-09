@@ -7,6 +7,6 @@ COPY ["src/", "src/"]
 COPY ["LICENSE", "LICENSE"]
 COPY ["setup.py", "setup.py"]
 
-RUN ["pip", "install", "--no-cache-dir", "-e", "."]
+RUN ["pip", "install", "--no-cache-dir", "."]
 
 CMD ["rainfeeds", "sync"]
