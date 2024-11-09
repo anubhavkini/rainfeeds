@@ -6,7 +6,7 @@ from src.raindrop import Raindrop
 
 def main():
     # Load feeds
-    feeds = Feeds("data/feeds_test.opml")
+    feeds = Feeds("data/rainfeeds.opml")
 
     # Create feed tracker
     feed_tracker = FeedTracker(feeds)
