@@ -1,7 +1,7 @@
 {
 	"name": "Python 3",
 	"image": "mcr.microsoft.com/devcontainers/python:1-3.12-bullseye",
-	"onCreateCommand": "pip install -r requirements.txt",
+	"onCreateCommand": "pip install -e .",
 		
 	"remoteUser": "vscode",
 	"containerUser": "vscode"
