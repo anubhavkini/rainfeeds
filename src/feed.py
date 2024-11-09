@@ -133,8 +133,11 @@ class FeedTracker:
         """
         for feed in self.feeds:
             time_now = datetime.now()
-            last_updated = datetime.fromtimestamp(
-                self.history.last_updated(feed["url"]))
+            try:
+                last_updated = datetime.fromtimestamp(
+                    self.history.last_updated(feed["url"]))
+            except TypeError:
+                last_updated = None
 
             feed_entries = FeedParser.fetch_feed_entries(feed["url"])
             for entry in feed_entries:
