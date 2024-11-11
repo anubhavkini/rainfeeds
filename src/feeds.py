@@ -1,4 +1,5 @@
 import os
+import logging
 import xml.etree.ElementTree as ET
 import feedparser
 
@@ -35,7 +36,8 @@ class Feeds:
             feeds_file_path (str): Path to the OPML file
         """
         if not os.path.exists(feeds_file_path):
-            print("No feeds file found. New one will be created.")
+            logging.warning(
+                "No subscriptions file found. New one will be created.")
             return
 
         tree = ET.parse(feeds_file_path)
@@ -101,13 +103,13 @@ class Feeds:
             category (str, optional): Category of the feed. Defaults to None.
         """
         if url in self:
-            print("Feed already exists.")
+            logging.error("Feed already exists.")
             return
 
         feed = feedparser.parse(url)
 
         if feed.version == '':
-            print("Invalid feed.")
+            logging.error("Invalid feed.")
             return
 
         if title is None:
@@ -131,7 +133,7 @@ class Feeds:
         try:
             del self[url]
         except KeyError:
-            print("Feed does not exist.")
+            logging.error("Feed does not exist.")
 
     def edit(self, url: str, title: str = None, category: str = None):
         """
@@ -143,7 +145,7 @@ class Feeds:
             category (str, optional): New category of the feed. Defaults to None.
         """
         if url not in self:
-            print("Feed does not exist.")
+            logging.error("Feed does not exist.")
             return
 
         if title is not None:

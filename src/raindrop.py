@@ -70,7 +70,7 @@ class RaindropClient:
 
 
 class Raindrop:
-    def __init__(self, access_token: str, group: str = "Inbox"):
+    def __init__(self, access_token: str, group: str):
         """
         Initialize Raindrop client
 
